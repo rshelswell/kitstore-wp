@@ -187,7 +187,7 @@ function kwp_activate() {
 	$table_name_loans = $wpdb->prefix . 'tLoans';
 	$table_name_problems = $wpdb->prefix . 'tProblems';
 	$table_name_types = $wpdb->prefix . 'tTypes';	
-		
+
 	$charset_collate = $wpdb->get_charset_collate();
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	
@@ -234,13 +234,9 @@ function kwp_activate() {
 	parent_type int(11) DEFAULT NULL,
 	PRIMARY KEY  (id)
 	) $charset_collate;
-	ALTER TABLE $table_name_kit
-	ADD CONSTRAINT tKit_fk0 FOREIGN KEY (barcode) REFERENCES $table_name_barcodes (barcode) ON UPDATE CASCADE,
-	ADD CONSTRAINT tKit_fk2 FOREIGN KEY (type) REFERENCES $table_name_types (id) ON UPDATE CASCADE;
-	ALTER TABLE $table_name_loans
-	ADD CONSTRAINT tLoans_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode) ON UPDATE CASCADE;
-	ALTER TABLE $table_name_problems
-	ADD CONSTRAINT tProblems_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode);
+	ALTER TABLE $table_name_kit ADD CONSTRAINT tKit_fk0 FOREIGN KEY (barcode) REFERENCES $table_name_barcodes (barcode) ON UPDATE CASCADE, ADD CONSTRAINT tKit_fk2 FOREIGN KEY (type) REFERENCES $table_name_types (id) ON UPDATE CASCADE;
+	ALTER TABLE $table_name_loans ADD CONSTRAINT tLoans_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode) ON UPDATE CASCADE; 
+	ALTER TABLE $table_name_problems ADD CONSTRAINT tProblems_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode);
 ";
 	$wpdb->query($sql);
 }
