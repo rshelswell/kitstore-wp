@@ -193,8 +193,7 @@ function kwp_activate() {
 	
 	$sql = "CREATE TABLE IF NOT EXISTS $table_name_barcodes (
 	barcode int(8) NOT NULL
-	PRIMARY KEY  (barcode),
-	UNIQUE KEY barcode (barcode)
+	PRIMARY KEY  (barcode)
 	) $charset_collate;";
 	
 	dbDelta($wpdb->prepare($sql));
