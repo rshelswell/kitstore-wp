@@ -10,12 +10,10 @@
 **/
 <?php
 
-global $kwp_db_version;
-$kwp_db_version = '1.0';
-
 function kwp_install() {
 	global $wpdb;
 	global $kwp_db_version;
+	$kwp_db_version = "1.0";
 
 	$table_name_barcodes = $wpdb->prefix . 'tBarcodes';
 	
@@ -179,10 +177,81 @@ COMMIT;
 
 
 function kwp_activate() {
+	global $wpdb;
+	global $kwp_db_version;
+	$kwp_db_version = "1.0";
 
+	$table_name_barcodes = $wpdb->prefix . 'tBarcodes';
+	$table_name_kit = $wpdb->prefix . 'tKit';
+	$table_name_loans = $wpdb->prefix . 'tLoans';
+	$table_name_problems = $wpdb->prefix . 'tProblems';
+	$table_name_types = $wpdb->prefix . 'tTypes';	
+		
+	$charset_collate = $wpdb->get_charset_collate();
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name_barcodes (
+	barcode int(8) NOT NULL
+	PRIMARY KEY  (barcode),
+	UNIQUE KEY barcode (barcode)
+	) $charset_collate;
+	CREATE TABLE IF NOT EXISTS $table_name_kit (
+	barcode int(11) NOT NULL,
+	parent_item int(11) DEFAULT NULL,
+	type int(11) NOT NULL,
+	entered_service datetime NOT NULL,
+	retired datetime DEFAULT NULL,
+	PRIMARY KEY  (barcode),
+	KEY tkit_fk1 (parent_item),
+	KEY tkit_fk2 (type)
+	) $charset_collate;
+	CREATE TABLE IF NOT EXISTS $table_name_loans (
+	id int(11) NOT NULL AUTO_INCREMENT,
+	item int(11) NOT NULL,
+	user int(11) NOT NULL,
+	time_out datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	time_in datetime DEFAULT NULL,
+	PRIMARY KEY  (id),
+	KEY tLoans_fk0 (item)
+	) $charset_collate;
+	CREATE TABLE IF NOT EXISTS $table_name_problems (
+	id int(11) NOT NULL AUTO_INCREMENT,
+	item int(11) NOT NULL,
+	problem varchar(1022) NOT NULL,
+	time_logged datetime NOT NULL,
+	time_fixed datetime DEFAULT NULL,
+	critical tinyint(1) NOT NULL DEFAULT '1',
+	PRIMARY KEY  (id),
+	KEY tProblems_fk0 (item)
+	) $charset_collate;
+	CREATE TABLE IF NOT EXISTS $table_name_types (
+	id int(11) NOT NULL AUTO_INCREMENT,
+	type enum('Tent','Flysheet','Inner','Poles','Pegs','Stove','Rucksack','Compass','Map','Rollmat') NOT NULL,
+	brand varchar(255) NOT NULL,
+	model varchar(255) NOT NULL,
+	description varchar(255) NOT NULL,
+	parent_type int(11) DEFAULT NULL,
+	PRIMARY KEY  (id)
+	) $charset_collate;
+	ALTER TABLE $table_name_kit
+	ADD CONSTRAINT tKit_fk0 FOREIGN KEY (barcode) REFERENCES $table_name_barcodes (barcode) ON UPDATE CASCADE,
+	ADD CONSTRAINT tKit_fk2 FOREIGN KEY (type) REFERENCES $table_name_types (id) ON UPDATE CASCADE;
+	ALTER TABLE $table_name_loans
+	ADD CONSTRAINT tLoans_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode) ON UPDATE CASCADE;
+	ALTER TABLE $table_name_problems
+	ADD CONSTRAINT tProblems_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode);
+";
+	$wpdb->query($sql);
 }
 
 register_activation_hook( __FILE__, 'kwp_activate' );
+
+function kwp_deactivate() {
+
+}
+
+register_deactivation_hook( __FILE__, 'kwp_deactivate' );
+
 
 /**
  *	shortcodes for form inclusions
