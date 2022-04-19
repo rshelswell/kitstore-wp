@@ -177,6 +177,13 @@ COMMIT;
 	add_option( 'kwp_db_version', $kwp_db_version );
 }	
 
+
+function kwp_activate() {
+
+}
+
+register_activation_hook( __FILE__, 'kwp_activate' );
+
 /**
  *	shortcodes for form inclusions
  */
