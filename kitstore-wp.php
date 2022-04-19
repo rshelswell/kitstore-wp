@@ -195,24 +195,33 @@ function kwp_activate() {
 	barcode int(8) NOT NULL
 	PRIMARY KEY  (barcode),
 	UNIQUE KEY barcode (barcode)
-	) $charset_collate;
-	CREATE TABLE IF NOT EXISTS $table_name_kit (
+	) $charset_collate;";
+	
+	dbDelta($wpdb->prepare($sql));
+	
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name_kit (
 	barcode int(11) NOT NULL,
 	parent_item int(11) DEFAULT NULL,
 	type int(11) NOT NULL,
 	entered_service datetime NOT NULL,
 	retired datetime DEFAULT NULL,
 	PRIMARY KEY  (barcode)
-	) $charset_collate;
-	CREATE TABLE IF NOT EXISTS $table_name_loans (
+	) $charset_collate;";
+
+	dbDelta($wpdb->prepare($sql));
+	
+	$sql = "CREATE TABLE IF NOT EXISTS $table_name_loans (
 	id int(11) NOT NULL AUTO_INCREMENT,
 	item int(11) NOT NULL,
 	user int(11) NOT NULL,
 	time_out datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	time_in datetime DEFAULT NULL,
 	PRIMARY KEY  (id)
-	) $charset_collate;
-	CREATE TABLE IF NOT EXISTS $table_name_problems (
+	) $charset_collate;";
+	
+	dbDelta($wpdb->prepare($sql));
+	
+	$sql = "	CREATE TABLE IF NOT EXISTS $table_name_problems (
 	id int(11) NOT NULL AUTO_INCREMENT,
 	item int(11) NOT NULL,
 	problem varchar(1022) NOT NULL,
@@ -220,8 +229,11 @@ function kwp_activate() {
 	time_fixed datetime DEFAULT NULL,
 	critical tinyint(1) NOT NULL DEFAULT '1',
 	PRIMARY KEY  (id)
-	) $charset_collate;
-	CREATE TABLE IF NOT EXISTS $table_name_types (
+	) $charset_collate;";
+	
+	dbDelta($wpdb->prepare($sql));
+	
+	$sql = "	CREATE TABLE IF NOT EXISTS $table_name_types (
 	id int(11) NOT NULL AUTO_INCREMENT,
 	type enum('Tent','Flysheet','Inner','Poles','Pegs','Stove','Rucksack','Compass','Map','Rollmat') NOT NULL,
 	brand varchar(255) NOT NULL,
