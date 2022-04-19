@@ -202,9 +202,7 @@ function kwp_activate() {
 	type int(11) NOT NULL,
 	entered_service datetime NOT NULL,
 	retired datetime DEFAULT NULL,
-	PRIMARY KEY  (barcode),
-	KEY tkit_fk1 (parent_item),
-	KEY tkit_fk2 (type)
+	PRIMARY KEY  (barcode)
 	) $charset_collate;
 	CREATE TABLE IF NOT EXISTS $table_name_loans (
 	id int(11) NOT NULL AUTO_INCREMENT,
@@ -212,8 +210,7 @@ function kwp_activate() {
 	user int(11) NOT NULL,
 	time_out datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	time_in datetime DEFAULT NULL,
-	PRIMARY KEY  (id),
-	KEY tLoans_fk0 (item)
+	PRIMARY KEY  (id)
 	) $charset_collate;
 	CREATE TABLE IF NOT EXISTS $table_name_problems (
 	id int(11) NOT NULL AUTO_INCREMENT,
@@ -222,8 +219,7 @@ function kwp_activate() {
 	time_logged datetime NOT NULL,
 	time_fixed datetime DEFAULT NULL,
 	critical tinyint(1) NOT NULL DEFAULT '1',
-	PRIMARY KEY  (id),
-	KEY tProblems_fk0 (item)
+	PRIMARY KEY  (id)
 	) $charset_collate;
 	CREATE TABLE IF NOT EXISTS $table_name_types (
 	id int(11) NOT NULL AUTO_INCREMENT,
@@ -233,12 +229,8 @@ function kwp_activate() {
 	description varchar(255) NOT NULL,
 	parent_type int(11) DEFAULT NULL,
 	PRIMARY KEY  (id)
-	) $charset_collate;
-	ALTER TABLE $table_name_kit ADD CONSTRAINT tKit_fk0 FOREIGN KEY (barcode) REFERENCES $table_name_barcodes (barcode) ON UPDATE CASCADE, ADD CONSTRAINT tKit_fk2 FOREIGN KEY (type) REFERENCES $table_name_types (id) ON UPDATE CASCADE;
-	ALTER TABLE $table_name_loans ADD CONSTRAINT tLoans_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode) ON UPDATE CASCADE; 
-	ALTER TABLE $table_name_problems ADD CONSTRAINT tProblems_fk0 FOREIGN KEY (item) REFERENCES $table_name_kit (barcode);
-";
-	$wpdb->query($sql);
+	) $charset_collate;";
+	dbDelta($wpdb->prepare($sql));
 }
 
 register_activation_hook( __FILE__, 'kwp_activate' );
