@@ -1,3 +1,5 @@
+<?php
+
 /**
  * Plugin Name: Kitstore WP
  * Plugin URI: richardshelswell.co.uk/kitstore-wp
@@ -8,7 +10,6 @@
  * License: Apache-2.0
  * License URI: http://www.apache.org/licenses/LICENSE-2.0
 **/
-<?php
 
 function kwp_install() {
 	global $wpdb;
