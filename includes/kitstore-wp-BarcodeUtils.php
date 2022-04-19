@@ -1,25 +1,16 @@
 <?php
-require_once "interfaces.php";
-class BarcodeUtils implements dbConnection {
+class BarcodeUtils {
     public $identifier;
     public $barcode;
     private static $barcodeList = array();
 
-    private static function setBarcodeList() {
-        /**
-        require_once dbConnection::DB_CONFIG;
-        $mysqli = db_connect();
-        $stment = $mysqli->prepare("SELECT barcode from tBarcodes");
-        $stment->execute();
-        $stment->bind_result($resBarcode);
-        while ($stment->fetch()) {
-            array_push(self::$barcodeList, $resBarcode);
-        }
-        $stment->close();
-        $mysqli->close();
-         */
+    private static function setBarcodeList() { 
         global $wpdb;
         $sql = $wpdb->prepare("SELECT barcode from {$wpdb->prefix}tBarcodes");
+        $result = $wpdb->get_results($sql);
+        foreach ($result as $bc) {
+            array_push(self::$barcodeList, $bc);
+        }
     }
     
     public static function barcodeInUse($testCode) {
@@ -72,17 +63,14 @@ class BarcodeUtils implements dbConnection {
     }
 
     public function saveBarcode() {
-        // require_once dbConnection::DB_CONFIG;
-        $mysqli = db_connect();
-        $stmnt = $mysqli->prepare("INSERT into tBarcodes(barcode) VALUES (?)");
-        $stmnt->bind_param('d', $this->barcode);
-        $stmnt->execute();
-        if ($stmnt->affected_rows) {
+        global $wpdb;
+        if ($wpdb->insert("{$wpdb->prefix}tBarcodes",
+            array('barcode' => $this->barcode),
+            array('%d'))) {
             // if it's now in use, add the barcode to the in use list without bothering the database again.
             self::$barcodeList[] = $this->barcode;
-        }
-        $stmnt->close();
-        $mysqli->close();
+        } 
+         
     }
 
     public function getBarcode() {
