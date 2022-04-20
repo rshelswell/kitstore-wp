@@ -133,20 +133,26 @@ class Kitstore {
         }
         if (!empty($message)) {
         	    $infobox = <<<HTML
-            <div class="alert alert-info" role="alert">
-                $message
-            </div>
+<!-- wp:kadence/infobox {"uniqueID":"_f25390-0e","hAlign":"left","containerBackground":"#ffffff","containerHoverBackground":"#ffffff","containerBorderWidth":[5,5,5,5],"containerBorderRadius":20,"containerPadding":[24,24,24,24],"mediaAlign":"left","mediaImage":[{"url":"","id":"","alt":"","width":"","height":"","maxWidth":100,"hoverAnimation":"none","flipUrl":"","flipId":"","flipAlt":"","flipWidth":"","flipHeight":"","subtype":"","flipSubtype":""}],"mediaIcon":[{"icon":"fe_alertCircle","size":50,"width":2,"title":"Alert","color":"#64a56a","hoverColor":"#444444","hoverAnimation":"none","flipIcon":""}],"mediaStyle":[{"background":"#ffffff","hoverBackground":"#ffffff","border":"#eeeeee","hoverBorder":"#eeeeee","borderRadius":120,"borderWidth":[5,5,5,5],"padding":[20,20,20,20],"margin":[0,20,0,0]}],"titleFont":[{"level":3,"size":["","",""],"sizeType":"px","lineHeight":["","",""],"lineType":"px","letterSpacing":"","textTransform":"","family":"Ubuntu","google":true,"style":"normal","weight":"400","variant":"regular","subset":"latin","loadGoogle":true,"padding":[0,0,0,0],"paddingControl":"linked","margin":[5,0,10,0],"marginControl":"individual"}],"textFont":[{"size":["","",""],"sizeType":"px","lineHeight":["","",""],"lineType":"px","letterSpacing":"","family":"Ubuntu","google":true,"style":"normal","weight":"400","variant":"regular","subset":"latin","loadGoogle":true,"textTransform":""}],"containerMargin":["","","",""]} -->
+<div id="kt-info-box_f25390-0e" class="wp-block-kadence-infobox"><a class="kt-blocks-info-box-link-wrap info-box-link kt-blocks-info-box-media-align-left kt-info-halign-left"><div class="kt-blocks-info-box-media-container"><div class="kt-blocks-info-box-media kt-info-media-animate-none"><div class="kadence-info-box-icon-container kt-info-icon-animate-none"><div class="kadence-info-box-icon-inner-container"><span style="display:block;justify-content:center;align-items:center" class="kt-info-svg-icon kt-info-svg-icon-fe_alertCircle"><svg style="display:inline-block;vertical-align:middle" viewbox="0 0 24 24" height="50" width="50" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>Alert</title><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg></span></div></div></div></div><div class="kt-infobox-textcontent"><h3 class="kt-blocks-info-box-title">Form submitted</h3><p class="kt-blocks-info-box-text">$message</p></div></a></div>
+<!-- /wp:kadence/infobox --> 
 HTML;
         		return $infobox;
+		} else {
+			return;
 		}	
     }
 
     public static function sign_out_ui() {
         
         $output = <<<HTML
+        <!-- wp:shortcode -->
         [kit_sign_out_message]
-        <p>Choose user from list and scan barcode(s) for any equipment
-            borrowed.</p>
+        <!-- /wp:shortcode -->
+        <!-- wp:paragraph -->
+        <p>Choose user from list and scan barcode(s) 
+        for any equipment borrowed.</p>
+        <!-- /wp:paragraph -->
         <form action="" method="post">
             <div id="group_select">
                 <label for="group-selector">Choose user's group</label>
@@ -179,10 +185,10 @@ HTML;
 		} else {
 			$soid = 0;
 		}
-		$output = $soid . $output;
+
 		$signout_page = array(
 			'post_type'     => 'page',
-			'post_ID'		=> $soid,
+			'ID'		=> $soid,
 			'post_status'   => 'draft',
 			'post_title'    => 'Sign Out',
 			'post_content'  => $output);
