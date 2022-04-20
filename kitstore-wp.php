@@ -28,7 +28,7 @@ class Kitstore {
         register_deactivation_hook( __FILE__, array( 'Kitstore', 'deactivate' ) );
         
         //Shortcode hooks
-        add_shortcode( 'kit_sign_out_message', array( 'Kitstore', 'kwp_kit_sign_out_message' );
+        add_shortcode( 'kit_sign_out_message', array( 'Kitstore', 'kwp_kit_sign_out_message' ) );
     }
 
 	function activate() {
