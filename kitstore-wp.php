@@ -33,14 +33,14 @@ class Kitstore {
         // Add the group field to user profile editing screen.
 		add_action(
 		    'edit_user_profile',
-		    'usermeta_form_field_group'
+		    array('Kitstore', 'usermeta_form_field_group')
 		);
 		  
 		  
 		// Add the group save action to user profile editing screen update.
 		add_action(
 		    'edit_user_profile_update',
-		    'usermeta_form_field_group_update'
+		    array('Kitstore', 'usermeta_form_field_group_update')
 		);
     }
 
