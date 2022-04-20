@@ -102,7 +102,7 @@ class Kitstore {
 		add_option( 'kwp_db_version', $kwp_db_version );
 	}
 
-	function public static deactivate() {
+	public static function deactivate() {
 	
 	}
 
