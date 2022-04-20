@@ -213,7 +213,7 @@ HTML;
 	 *
 	 * @param $user WP_User user object
 	 */
-	function usermeta_form_field_group( $user )
+	public static function usermeta_form_field_group( $user )
 	{
 	    ?>
 	    <h3>DofE group</h3>
@@ -247,7 +247,7 @@ HTML;
 	 *
 	 * @return bool Meta ID if the key didn't exist, true on successful update, false on failure.
 	 */
-	function usermeta_form_field_group_update( $user_id )
+	public static function usermeta_form_field_group_update( $user_id )
 	{
 	    // check that the current user have the capability to edit the $user_id
 	    if ( ! current_user_can( 'edit_user', $user_id ) ) {
