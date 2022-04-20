@@ -101,9 +101,8 @@ class Kitstore {
 		
 		add_option( 'kwp_db_version', $kwp_db_version );
 		
-		if (	!post_exists( "Sign Out",'','page','')) {
-			Kitstore::sign_out_ui();
-		}
+		Kitstore::sign_out_ui();
+		
 	}
 
 	public static function deactivate() {
@@ -146,17 +145,17 @@ HTML;
         
         $output = <<<HTML
         [kit_sign_out_message]
-        <p class="instructions">Choose user from list and scan barcode(s) for any equipment
+        <p>Choose user from list and scan barcode(s) for any equipment
             borrowed.</p>
-        <form action="sign_out.php" method="post">
-            <div class="form-group" id="group_select">
+        <form action="" method="post">
+            <div id="group_select">
                 <label for="group-selector">Choose user's group</label>
                 <select class="form-control" id="group-selector" name="group-selector"
                         onchange="show_participant_choices(1)">
                     <option value="0">All users</option>
                 </select>
             </div>
-            <div class="form-group" id="participant-input">
+            <div id="participant-input">
 
             </div>
             <div class="form-group">
@@ -173,29 +172,11 @@ HTML;
             <button class="btn btn-primary" type="submit">Submit</button>
         </form>
 
-        <div class="modal" id="livestream_scanner">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <h4 class="modal-title">Barcode Scanner</h4>
-                    </div>
-                    <div class="modal-body" style="position: static">
-                        <div class="viewport" id="interactive"></div>
-                        <div class="error"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary" data-dismiss="modal" type="button">Close</button>
-                    </div>
-                </div><!-- /.modal-content -->
-            </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
 HTML;
 
 		$signout_page = array(
 			'post_type'     => 'page',
+			'post_ID'		=> post_exists( "Sign Out",'','page',''),
 			'post_status'   => 'draft',
 			'post_title'    => 'Sign Out',
 			'post_content'  => $output);
