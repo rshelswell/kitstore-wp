@@ -1,38 +1,43 @@
 <?php
 
 class Kitstore-wp {
-    function sign_out_ui() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    function sign_out_message() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
+        
         // process items for sign out
-
-            $kUser = $_POST['user-choice'];
-            $kItems = explode(" ", trim($_POST['item_codes']));
-            $used_barcodes = array();
-            $fail_barcodes = array();
-            foreach ($kItems as $bcString) {
-                $ki = new KitItem($bcString);
-                if ($ki->signOut($kUser)) {
-                    array_push($used_barcodes, $bcString);
-                } else {
-                    array_push($fail_barcodes, $bcString);
-                }
-            }
-
-            $userObj = new KitUser($kUser);
-            $message = "Signed out items with barcodes : " . KitItem::getLatestLoans() . " to user : " . $userObj->getName() . "<br>";
-            if (!empty($fail_barcodes)) {
-                $message .= "These barcodes failed to sign out, please resolve problems : " . join(", ", $fail_barcodes) . "<br>";
+        $kUser = $_POST['user-choice'];
+        $kItems = explode(" ", trim($_POST['item_codes']));
+        $used_barcodes = array();
+        $fail_barcodes = array();
+        foreach ($kItems as $bcString) {
+            $ki = new KitItem($bcString);
+            if ($ki->signOut($kUser)) {
+                array_push($used_barcodes, $bcString);
+            } else {
+                array_push($fail_barcodes, $bcString);
             }
         }
-        if (!empty($message)) {
-            $infobox = <<<HTML
+        
+        $userObj = new KitUser($kUser);
+        $message = "Signed out items with barcodes : " . KitItem::getLatestLoans() . " to user : " . $userObj->getName() . "<br>";
+        if (!empty($fail_barcodes)) {
+            $message .= "These barcodes failed to sign out, please resolve problems : " . join(", ", $fail_barcodes) . "<br>";
+        }
+    }
+    if (!empty($message)) {
+        $infobox = <<<HTML
             <div class="alert alert-info" role="alert">
                 $message
             </div>
 HTML;
-            echo $infobox;
-        }
+        echo $infobox;
+    }
+
+    function sign_out_ui() {
+        
         $output = <<<HTML
+        [kit_sign_out_message]
         <p class="instructions">Choose user from list and scan barcode(s) for any equipment
             borrowed.</p>
         <form action="sign_out.php" method="post">
