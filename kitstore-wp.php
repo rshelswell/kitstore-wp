@@ -173,10 +173,15 @@ HTML;
         </form>
 
 HTML;
-
+		$pg = get_page_by_title("Sign Out");
+		if (!empty($pg)) {
+			$soid = $pg->ID;
+		} else {
+			$soid = 0;
+		}	
 		$signout_page = array(
 			'post_type'     => 'page',
-			'post_ID'		=> post_exists( "Sign Out",'','page',''),
+			'post_ID'		=> $soid,
 			'post_status'   => 'draft',
 			'post_title'    => 'Sign Out',
 			'post_content'  => $output);
