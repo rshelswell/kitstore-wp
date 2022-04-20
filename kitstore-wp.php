@@ -100,6 +100,10 @@ class Kitstore {
 		dbDelta($wpdb->prepare($sql));
 		
 		add_option( 'kwp_db_version', $kwp_db_version );
+		
+		if (	!post_exists( "Sign Out",'','page','')) {
+			Kitstore::sign_out_ui();
+		}
 	}
 
 	public static function deactivate() {
@@ -138,7 +142,7 @@ HTML;
 		}	
     }
 
-    function sign_out_ui() {
+    public static function sign_out_ui() {
         
         $output = <<<HTML
         [kit_sign_out_message]
@@ -189,9 +193,15 @@ HTML;
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 HTML;
+
+		$signout_page = array(
+			'post_type'     => 'page',
+			'post_status'   => 'draft',
+			'post_title'    => 'Sign Out',
+			'post_content'  => $output);
+		wp_insert_post($signout_page);
     }
 }
-
 
 $kwp_plugin = new Kitstore;
 
