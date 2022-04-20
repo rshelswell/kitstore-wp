@@ -29,6 +29,19 @@ class Kitstore {
         
         //Shortcode hooks
         add_shortcode( 'kit_sign_out_message', array( 'Kitstore', 'sign_out_message' ) );
+        
+        // Add the group field to user profile editing screen.
+		add_action(
+		    'edit_user_profile',
+		    'usermeta_form_field_group'
+		);
+		  
+		  
+		// Add the group save action to user profile editing screen update.
+		add_action(
+		    'edit_user_profile_update',
+		    'usermeta_form_field_group_update'
+		);
     }
 
 	public static function activate() {
@@ -194,8 +207,64 @@ HTML;
 			'post_content'  => $output);
 		wp_insert_post($signout_page);
     }
+    
+    /**
+ 	 * add group field to user editing screen.
+	 *
+	 * @param $user WP_User user object
+	 */
+	function usermeta_form_field_group( $user )
+	{
+	    ?>
+	    <h3>DofE group</h3>
+	    <table class="form-table">
+	        <tr>
+	            <th>
+	                <label for="dofegroup">Group</label>
+	            </th>
+	            <td>
+	                <input type="text"
+	                       class="regular-text ltr"
+	                       id="dofegroup"
+	                       name="dofegroup"
+	                       value="<?= esc_attr( get_user_meta( $user->ID, 'dofegroup', true ) ) ?>"
+	                       title="Please use Staff or Level Year format (e.g. Bronze 2022)."
+	                       pattern="(Staff|((Bronze|Silver|Gold) (19[0-9][0-9]|20[0-9][0-9])))"
+	                       required>
+	                <p class="description">
+	                    Choose group for user.
+	                </p>
+	            </td>
+	        </tr>
+	    </table>
+	    <?php
+	}
+	  
+	/**
+	 * The save action.
+	 *
+	 * @param $user_id int the ID of the current user.
+	 *
+	 * @return bool Meta ID if the key didn't exist, true on successful update, false on failure.
+	 */
+	function usermeta_form_field_group_update( $user_id )
+	{
+	    // check that the current user have the capability to edit the $user_id
+	    if ( ! current_user_can( 'edit_user', $user_id ) ) {
+	        return false;
+	    }
+	  
+	    // create/update user meta for the $user_id
+	    return update_user_meta(
+	        $user_id,
+	        'dofegroup',
+	        $_POST['dofegroup']
+	    );
+	}
+	 
 }
 
 $kwp_plugin = new Kitstore;
+
 
 ?>
