@@ -31,7 +31,7 @@ class Kitstore {
         add_shortcode( 'kit_sign_out_message', array( 'Kitstore', 'kwp_kit_sign_out_message' ) );
     }
 
-	function activate() {
+	public static function activate() {
 		if ( ! current_user_can( 'activate_plugins' ) ) return;
 		
 		global $wpdb;
@@ -102,7 +102,7 @@ class Kitstore {
 		add_option( 'kwp_db_version', $kwp_db_version );
 	}
 
-	function deactivate() {
+	function public static deactivate() {
 	
 	}
 
