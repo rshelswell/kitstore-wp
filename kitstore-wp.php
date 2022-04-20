@@ -11,7 +11,7 @@
  * License URI: http://www.apache.org/licenses/LICENSE-2.0
 **/
 
-class Kitstore-wp {
+class Kitstore {
 	/**
      * Constructor
      */
@@ -24,11 +24,11 @@ class Kitstore-wp {
      */
     public function setup_actions() {
         //Main plugin hooks
-        register_activation_hook( __FILE__, array( 'Kitstore-wp', 'activate' ) );
-        register_deactivation_hook( __FILE__, array( 'Kitstore-wp', 'deactivate' ) );
+        register_activation_hook( __FILE__, array( 'Kitstore', 'activate' ) );
+        register_deactivation_hook( __FILE__, array( 'Kitstore', 'deactivate' ) );
         
         //Shortcode hooks
-        add_shortcode( 'kit_sign_out_message', array( 'Kitstore-wp', 'kwp_kit_sign_out_message' );
+        add_shortcode( 'kit_sign_out_message', array( 'Kitstore', 'kwp_kit_sign_out_message' );
     }
 
 	function activate() {
@@ -193,6 +193,6 @@ HTML;
 }
 
 
-$kwp_plugin = new Kitstore-wp;
+$kwp_plugin = new Kitstore;
 
 ?>
