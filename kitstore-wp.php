@@ -178,7 +178,8 @@ HTML;
 			$soid = $pg->ID;
 		} else {
 			$soid = 0;
-		}	
+		}
+		$output = $soid . $output;
 		$signout_page = array(
 			'post_type'     => 'page',
 			'post_ID'		=> $soid,
