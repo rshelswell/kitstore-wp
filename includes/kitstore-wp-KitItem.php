@@ -1,13 +1,11 @@
 <?php
-require_once "interfaces.php";
 require_once "BarcodeUtils.php";
-require_once "KitUser.php";
 
-class KitItem implements dbConnection
+class KitItem
 {
-        public static $returnList = '';            // BarcodeUtils, note to pass barcode property
+    public static $returnList = '';            // BarcodeUtils, note to pass barcode property
     public static $borrowedList = '';
-public $barcode;
+    public $barcode;
     public $onLoan = 0;
     public $currentProblem = false;
     private $itemType;
@@ -67,6 +65,15 @@ public $barcode;
         if (is_numeric($ktSetter)) {
             $this->itemType = $ktSetter;
         } else {
+            global $wpdb;
+            $this->itemType = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT id from {$wpdb->prefix}tTypes
+                    WHERE type = %s",
+                    $ktSetter)
+                );
+        
+        /*
             include_once dbConnection::DB_CONFIG;
             $mysqli_conn = db_connect();
             $stmnt = $mysqli_conn->prepare("SELECT id from tTypes WHERE type = ?");
@@ -77,6 +84,7 @@ public $barcode;
             $this->itemType = $kt_id;
             $stmnt->close();
             $mysqli_conn->close();
+        */ 
         }
     }
 
@@ -93,6 +101,21 @@ public $barcode;
 
     private function setEnteredService()
     {
+        global $wpdb;
+        $es_res = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT entered_service as esdate 
+                FROM {$wpdb->prefix}tKit
+                WHERE barcode = %d",
+                $this->barcode->barcode)
+            );
+        if (! empty($es_res)) {
+            $this->enteredService = $es_res->esdate;
+        } else {
+            $this->enteredService = date("Y-m-d G:i:s");
+        }  
+        
+        /*
         include_once dbConnection::DB_CONFIG;
         $mysqli_conn = db_connect();
         $stmnt = $mysqli_conn->prepare("SELECT entered_service from tKit WHERE barcode = ?");
@@ -107,10 +130,26 @@ public $barcode;
         }
         $stmnt->close();
         $mysqli_conn->close();
+        */
     }
 
     private function checkLoanStatus()
     {
+        global $wpdb;
+        $loans = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT count(id) as lcount 
+                FROM {$wpdb->prefix}tLoans
+                WHERE item = %d AND time_in IS NULL",
+                $this->barcode->barcode)
+            );
+        if ($loans->lcount) {
+            $this->onLoan = 1;
+        } else {
+            $this->onLoan = 0;
+        }
+        
+        /* 
         include_once dbConnection::DB_CONFIG;
         $db_conn = db_connect();
         $stmnt = $db_conn->prepare("SELECT count(id) from tLoans
@@ -129,6 +168,7 @@ public $barcode;
         }
         $stmnt->close();
         $db_conn->close();
+        */
     }
 
     public function getBarcode()
@@ -138,6 +178,19 @@ public $barcode;
 
     private function saveKitItem()
     {
+        global $wpdb;
+        $wpdb->query(
+            $wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}tKit 
+            (barcode, parent_item, type, entered_service, retired)
+            VALUES (%d,%d,%d,%s,%s)
+            ON DUPLICATE KEY UPDATE
+            parent_item = %d, type = %d, entered_service = %s, retired = %s",
+            array($this->barcode->barcode, $this->parentItem->barcode,
+            $this->itemType, $this->enteredService, $this->retired,
+            $this->parentItem->barcode, $this->itemType, $this->enteredService,
+            $this->retired)));
+        /*
         include_once dbConnection::DB_CONFIG;
         $mysqli_conn = db_connect();
         $stmnt = $mysqli_conn->prepare("INSERT INTO tKit 
@@ -152,10 +205,43 @@ public $barcode;
         if (!$stmnt->execute()) {
             die("Couldn't save KitItem : " . $stmnt->error);
         }
+        */
     }
 
     private function getKitItem()
     {
+        global $wpdb;
+        $kitdata = $wpdb->get_row(
+            $wpdb->prepare("SELECT parent_item, 
+            type, entered_service, retired 
+            FROM {$wpdb->prefix}tKit
+            WHERE barcode=%d",
+            $this->barcode->barcode));
+        $this->parentItem = $kitdata->parent_item;
+        $this->itemType = $kitdata->type;
+        $this->enteredService = $kitdata->entered_service;
+        $this->retired = $kitdata->retired;
+        
+        $kitdata = $wpdb->get_results(
+            $wpdb->prepare("SELECT barcode 
+            FROM {$wpdb->prefix}tKit
+            WHERE parent_item=%d",
+            $this->barcode->barcode));
+        foreach ($kitdata as $kd) {
+            $this->children[] = new KitItem($kd->barcode);
+        } 
+        
+        $kitdata = $wpdb->get_results(
+            $wpdb->prepare("SELECT id 
+            FROM {$wpdb->prefix}tProblems
+            WHERE item=%d AND time_fixed IS NULL",
+            $this->barcode->barcode));
+        foreach ($kitdata as $kd) {
+            $this->problems[] = $kd->id;
+            $this->currentProblem = true;
+        }
+        $this->checkLoanStatus();
+        /*
         include_once dbConnection::DB_CONFIG;
         $mysqli_conn = db_connect();
         $stmnt = $mysqli_conn->prepare("SELECT parent_item, 
@@ -190,6 +276,7 @@ public $barcode;
 			$stmnt->close();
 			        $mysqli_conn->close();
         $this->checkLoanStatus();
+        */
     }
 
     public static function getLatestReturns()
@@ -239,22 +326,37 @@ public $barcode;
   
   	public function getCurrentBorrower()
     {
-    	if ($this->isOnLoan()) {
-          $mysqli = db_connect();
-          $stmnt = $mysqli->prepare("
-          	SELECT user from tLoans WHERE item = ? and time_in IS NULL
-          ");
-          $stmnt->bind_param('i', $this->barcode->getBarcode());
-          if (!$stmnt->execute()) {
-            die('problem with get current borrower statement : ' . $stmnt->error);
-          }
-          $stmnt->bind_result($k_user);
-          $stmnt->fetch();
-          $kit_user = new KitUser($k_user);
-          
-          return $kit_user->getName();
-          $stmnt->close();
-          $mysqli->close();
+    	    if ($this->isOnLoan()) {
+        	    global $wpdb;
+        	    $user = $wpdb->get_row(
+        	        $wpdb->prepare("SELECT user 
+        	        FROM {$wpdb->prefix}tLoans 
+        	        WHERE item = %d AND time_in IS NULL",
+        	        $this->barcode->barcode));
+            $kit_user = new WP_User($user->user);
+            if ($kit_user->exists()) {
+                return $kit_user->display_name;
+            } else {
+                return "-";
+            } 
+              
+              /*
+              $mysqli = db_connect();
+              $stmnt = $mysqli->prepare("
+              	SELECT user from tLoans WHERE item = ? and time_in IS NULL
+              ");
+              $stmnt->bind_param('i', $this->barcode->getBarcode());
+              if (!$stmnt->execute()) {
+                die('problem with get current borrower statement : ' . $stmnt->error);
+              }
+              $stmnt->bind_result($k_user);
+              $stmnt->fetch();
+              $kit_user = new KitUser($k_user);
+              
+              return $kit_user->getName();
+              $stmnt->close();
+              $mysqli->close();
+              */
         } else {
           return "-";
         }
@@ -262,6 +364,16 @@ public $barcode;
 
     private function signOutChecked($kUser)
     {
+        global $wpdb;
+        $inserted = $wpdb->query(
+            $wpdb->prepare("INSERT INTO {$wpdb->prefix}tLoans (item, user)
+                VALUES (%d, %d)",
+                array($this->barcode->barcode, kUser)));
+        if ($inserted) {
+            $this->onLoan = 1;
+            self::$borrowedList .= $this->getBarcode()->getBarcode() . ", ";
+        } 
+        /*
         $mysqli = db_connect();
         $statemnt = $mysqli->prepare(
             "INSERT INTO tLoans (item, user)
@@ -273,6 +385,8 @@ public $barcode;
         }
         $statemnt->close();
         $mysqli->close();
+        */
+        
         foreach ($this->children as $kChild) {
             $kChild->signOutChecked($kUser);
         }
@@ -290,8 +404,7 @@ public $barcode;
            as the highest in a hierarchy will verify then check in
            all descendents.
         */
-
-// "Warning: dont need to check this one in, not on loan or has a parent item";
+        // "Warning: dont need to check this one in, not on loan or has a parent item";
         if (!is_null($this->parentItem)) {
             throw new Exception("Couldn't sign in, this item (" . $this->getBarcode()->getBarcode() . ") belongs to item " . $this->parentItem . ".");
         }
@@ -305,9 +418,21 @@ public $barcode;
         $missing = array_diff($descends, $codeArr);
         if (!$missing) {
             // all descendents are being signed in, just do them now, as have checked already
+            global $wpdb;
+            foreach ($descends as $desc) {
+                $success = $wpdb->query(
+                                $wpdb->prepare("UPDATE tLoans SET time_in = NOW()
+                                WHERE item = %d AND time_in IS NULL", $desc);
+                if ($success) {
+                    self::$returnList .= "Returned " . $returnedBc . "<br>";
+                } 
+            } 
+            return $descends;
+        
 
+            /*
             $mysqli = db_connect();
-            /* disable autocommit */
+            // disable autocommit 
             $mysqli->autocommit(FALSE);
             $stmnt = $mysqli->prepare("UPDATE tLoans SET time_in = NOW() WHERE item = ? AND time_in IS NULL");
             $stmnt->bind_param("i", $returnedBc);
@@ -328,11 +453,13 @@ public $barcode;
                     self::$returnList .= "Returned " . $returnedBc . "<br>";
                 }
             }
-            /* commit update transaction */
+            // commit update transaction
             $mysqli->commit();
             $stmnt->close();
             $mysqli->close();
             return $descends;
+            */
+            
         } else {
             // something's missing from the sign in list.
             throw new Exception("Error : Cannot sign kit item " . $this->getBarcode()->getBarcode() .
@@ -355,6 +482,24 @@ public $barcode;
 
     public function getProblemDetail($current=true)
     {
+        global $wpdb;
+        $dbdata = array();
+        foreach ($this->problems as $problem) {
+            $results = $wpdb->get_row(
+                        $wpdb->prepare(
+            "SELECT problem, time_logged, critical
+            FROM {$wpdb->prefix}tProblems
+            WHERE id=%d" + ($current ? "AND time_fixed IS NULL" : "" ),
+            $problem));
+            $dbdata[] = array(
+                'id' => strval($problem), 
+                'description' => $results->problem, 
+                'time' => $results->time_logged, 
+                'critical' => $results->critical);
+        }
+        
+        
+        /*
         $mysqli = db_connect();
         $stmnt = $mysqli->prepare(
             "SELECT problem, time_logged, critical from tProblems
@@ -370,10 +515,26 @@ public $barcode;
         }
         $stmnt->close();
         $mysqli->close();
+        */
+        
         return json_encode($dbdata);
     }
 
 	public function setProblem($desc, $crit=0) {
+	    global $wpdb;
+	    $inserted = $wpdb->query(
+	                $wpdb->prepare("
+	                INSERT INTO {$wpdb->prefix}tProblems(item, problem, time_logged, critical)
+	                VALUES (%d, %s , NOW(), %d)", 
+	                array($this->barcode->barcode, $desc, $crit)));
+	                
+        if ($inserted) {
+            $this->current_problem = true;
+			$this->problems[] = $mysqli->insert_id;
+        } else {
+            die("Couldn't save problem : " . $wpdb->last_error);
+        } 
+	    /*
 		$mysqli = db_connect();
 		$stmnt = $mysqli->prepare(
 			"INSERT into tProblems(item, problem, time_logged, critical)
@@ -385,6 +546,7 @@ public $barcode;
 			$this->current_problem = true;
 			$this->problems[] = $mysqli->insert_id;
 		}
+		*/
 	
 	}
 }

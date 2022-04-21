@@ -125,25 +125,35 @@ class Kitstore {
     function sign_out_message() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
         
-        // process items for sign out
-        $kUser = $_POST['user-choice'];
-        $kItems = explode(" ", trim($_POST['item_codes']));
-        $used_barcodes = array();
-        $fail_barcodes = array();
-        foreach ($kItems as $bcString) {
-            $ki = new KitItem($bcString);
-            if ($ki->signOut($kUser)) {
-                array_push($used_barcodes, $bcString);
-            } else {
-                array_push($fail_barcodes, $bcString);
-            }
-        }
+		require_once( plugin_dir_path(__FILE__) . 'includes/kitstore-wp-KitItem.php');
         
-        $userObj = new KitUser($kUser);
-        $message = "Signed out items with barcodes : " . KitItem::getLatestLoans() . " to user : " . $userObj->getName() . "<br>";
-        if (!empty($fail_barcodes)) {
-            $message .= "These barcodes failed to sign out, please resolve problems : " . join(", ", $fail_barcodes) . "<br>";
-        }
+        // process items for sign out
+        $kUser = filter_var($_POST['user-choice'], FILTER_VALIDATE_INT);
+	    $userObj = new WP_User($kUser); 
+        
+        if (! $kUser || ! $userObj->exists()) {
+    			$message = "Error: invalid user id selected";
+		} elseif (!preg_match("/^([\d]{8}\s*)+$/", trim($_POST['item_codes']))) {
+        		$message = "Error: invalid kit barcodes supplied";
+        } else {
+			
+	        $kItems = explode(" ", trim($_POST['item_codes']));
+	        $used_barcodes = array();
+	        $fail_barcodes = array();
+	        foreach ($kItems as $bcString) {
+	            $ki = new KitItem($bcString);
+	            if ($ki->signOut($kUser)) {
+	                array_push($used_barcodes, $bcString);
+	            } else {
+	                array_push($fail_barcodes, $bcString);
+	            }
+	        }
+
+	        $message = "Signed out items with barcodes : " . KitItem::getLatestLoans() . " to user : " . $userObj->display_name . "<br>";
+	        if (!empty($fail_barcodes)) {
+	            $message .= "These barcodes failed to sign out, please resolve problems : " . join(", ", $fail_barcodes) . "<br>";
+	        }
+		} 
         if (!empty($message)) {
         	    $infobox = <<<HTML
 <!-- wp:kadence/infobox {"uniqueID":"_f25390-0e","hAlign":"left","containerBackground":"#ffffff","containerHoverBackground":"#ffffff","containerBorderWidth":[5,5,5,5],"containerBorderRadius":20,"containerPadding":[24,24,24,24],"mediaAlign":"left","mediaImage":[{"url":"","id":"","alt":"","width":"","height":"","maxWidth":100,"hoverAnimation":"none","flipUrl":"","flipId":"","flipAlt":"","flipWidth":"","flipHeight":"","subtype":"","flipSubtype":""}],"mediaIcon":[{"icon":"fe_alertCircle","size":50,"width":2,"title":"Alert","color":"#64a56a","hoverColor":"#444444","hoverAnimation":"none","flipIcon":""}],"mediaStyle":[{"background":"#ffffff","hoverBackground":"#ffffff","border":"#eeeeee","hoverBorder":"#eeeeee","borderRadius":120,"borderWidth":[5,5,5,5],"padding":[20,20,20,20],"margin":[0,20,0,0]}],"titleFont":[{"level":3,"size":["","",""],"sizeType":"px","lineHeight":["","",""],"lineType":"px","letterSpacing":"","textTransform":"","family":"Ubuntu","google":true,"style":"normal","weight":"400","variant":"regular","subset":"latin","loadGoogle":true,"padding":[0,0,0,0],"paddingControl":"linked","margin":[5,0,10,0],"marginControl":"individual"}],"textFont":[{"size":["","",""],"sizeType":"px","lineHeight":["","",""],"lineType":"px","letterSpacing":"","family":"Ubuntu","google":true,"style":"normal","weight":"400","variant":"regular","subset":"latin","loadGoogle":true,"textTransform":""}],"containerMargin":["","","",""]} -->
@@ -229,8 +239,7 @@ HTML;
 	                       name="dofegroup"
 	                       value="<?= esc_attr( get_user_meta( $user->ID, 'dofegroup', true ) ) ?>"
 	                       title="Please use Staff or Level Year format (e.g. Bronze 2022)."
-	                       pattern="(Staff|((Bronze|Silver|Gold) (19[0-9][0-9]|20[0-9][0-9])))"
-	                       required>
+	                       pattern="(Staff|((Bronze|Silver|Gold) (19[0-9][0-9]|20[0-9][0-9])))">
 	                <p class="description">
 	                    Choose group for user.
 	                </p>
