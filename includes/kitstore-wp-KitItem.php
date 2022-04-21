@@ -422,7 +422,7 @@ class KitItem
             foreach ($descends as $desc) {
                 $success = $wpdb->query(
                                 $wpdb->prepare("UPDATE tLoans SET time_in = NOW()
-                                WHERE item = %d AND time_in IS NULL", $desc);
+                                WHERE item = %d AND time_in IS NULL", $desc));
                 if ($success) {
                     self::$returnList .= "Returned " . $returnedBc . "<br>";
                 } 
