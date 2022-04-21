@@ -9,7 +9,7 @@ class BarcodeUtils {
         $sql = $wpdb->prepare("SELECT barcode from {$wpdb->prefix}tBarcodes");
         $result = $wpdb->get_results($sql);
         foreach ($result as $bc) {
-            array_push(self::$barcodeList, $bc);
+            array_push(self::$barcodeList, $bc->barcode);
         }
     }
     
