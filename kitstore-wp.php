@@ -122,7 +122,7 @@ class Kitstore {
 	
 	}
 
-    function sign_out_message() {
+    public static function sign_out_message() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
         
 		require_once( plugin_dir_path(__FILE__) . 'includes/kitstore-wp-KitItem.php');
