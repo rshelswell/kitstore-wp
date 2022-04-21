@@ -1,5 +1,5 @@
 <?php
-require_once "BarcodeUtils.php";
+require_once "kitstore-wp-BarcodeUtils.php";
 
 class KitItem
 {
