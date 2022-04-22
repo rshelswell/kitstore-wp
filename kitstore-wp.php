@@ -11,7 +11,7 @@
  * License URI: http://www.apache.org/licenses/LICENSE-2.0
 **/
 
-include_once (plugin_dir_path( __FILE__ ) . 'includes/get=user=selector.php');
+include_once (plugin_dir_path( __FILE__ ) . 'includes/get-user-selector.php');
 
 class Kitstore {
 	/**
