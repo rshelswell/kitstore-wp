@@ -212,7 +212,7 @@ HTML;
 		$signout_page = array(
 			'post_type'     => 'page',
 			'ID'		=> $soid,
-			'post_status'   => 'draft',
+			'post_status'   => 'private',
 			'post_title'    => 'Sign Out',
 			'post_content'  => $output);
 		wp_insert_post($signout_page);

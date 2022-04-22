@@ -2,11 +2,14 @@
 require_once "interfaces.php";
 require_once "BarcodeUtils.php";
 
-class KitUser implements dbConnection
+class KitUser extends WP_User
 {
-    public $firstName = null;
-    public $lastName = null;
-    public $barcode = null;
+    /**
+     * remove items duplicated 
+        public $firstName = null;
+        public $lastName = null;
+        public $barcode = null;
+    */
     public $awardLevel = null;
     public $expedYear = null;
     protected $group = null;
@@ -147,5 +150,47 @@ class KitUser implements dbConnection
         $stmnt->execute();
         $stmnt->close();
         $dbconn->close();
+    }
+    
+    
+    public static function get_user_selectors($grpid) {
+        <section>
+            <div>
+              <input type="radio" id="control_01" name="select" value="1" checked>
+              <label for="control_01">
+                <h2>Pfft</h2>
+                <p>Awww, poor baby. Too afraid of the scary game sprites? I laugh at you.</p>
+              </label>
+            </div>
+            <div>
+              <input type="radio" id="control_02" name="select" value="2">
+              <label for="control_02">
+                <h2>Wannabe</h2>
+                <p>You're not a gaming God by any stretch of the imagination.</p>
+              </label>
+            </div>
+            <div>
+              <input type="radio" id="control_03" name="select" value="3">
+              <label for="control_03">
+                <h2>Daaamn</h2>
+                <p>Now we're talking. It's gettin' a bit hairy out there in game land.</p>
+              </label>
+            </div>
+            <div>
+              <input type="radio" id="control_04" name="select" value="4" disabled>
+              <label for="control_04">
+                <h2>Mental</h2>
+                <p>Prepare for glory! This is going to be one hell of a no-holds-barred ride.</p>
+              </label>
+            </div>
+            <div>
+              <input type="radio" id="control_05" name="select" value="5">
+              <label for="control_05">
+                <h2>Suicidal</h2>
+                <p>You will not live. Strap in and write a heart-felt letter to your loved ones.</p>
+              </label>
+            </div>
+            </section>
+                
     }
 }
