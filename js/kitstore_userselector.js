@@ -6,7 +6,7 @@
                 {
                     // wp ajax action
                     action: 'ajax-kitstoreUserSelector',
-                    q: $('group-selector').children("option:selected").val();
+                    q: $('group-selector').children("option:selected").val(),
                     nextNonce: KWP_Ajax.nextNonce
                 },
                 function (response) {
